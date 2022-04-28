@@ -15,12 +15,17 @@ import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Camera;
 import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
+import com.google.ar.core.HitResult;
 import com.google.ar.core.PointCloud;
+import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 
 import android.util.Log;
 import android.view.Display;
+import android.view.MotionEvent;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,6 +37,9 @@ public class MainActivity extends AppCompatActivity {
     MainRenderer mRenderer;
 
     Config mConfig; // ARCore session 설정정보를 받을 변수
+
+    float displayX, displayY;
+    boolean mTouched = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +115,36 @@ public class MainActivity extends AppCompatActivity {
                 // 사용이 끝난 포인트 자원해제
                 pointCloud.release();
 
+
+                // 화면 터치시 작업 시작
+                if(mTouched){
+
+                    List<HitResult> arr = frame.hitTest(displayX, displayY);
+
+//                    Log.d("MainActivity", "건드렸다. (" + displayX+", "+displayY+")"+ "hitList : "+arr);
+                    int i = 0;
+                    for(HitResult hr: arr){
+                        Pose pose = hr.getHitPose();
+                        float[] xx = pose.getXAxis();
+                        float[] yy = pose.getYAxis();
+                        float[] zz = pose.getZAxis();
+
+                        Log.d("Test" ,"i : "+i+", hr : "+ hr.toString()+", xAxis : "+xx+", yAxis : "+yy+", zAxis : "+zz);
+                        i++;
+                    }
+
+                    mTouched = false;
+
+
+                }
+
+
+
+
+
+                // 화면 터치시 작업 끝
+
+
                 // 카메라 frame에서 받는다.
                 // 용도 : mPointCloud에서 렌더링할 때 카메라의 좌표계산을 받아서 처리
                 Camera camera = frame.getCamera();
@@ -176,6 +214,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mySurView.onResume();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        displayX = event.getX();
+        displayY = event.getY();
+        mTouched = true;
+//
+
+        return true;
     }
 
     // 카메라 퍼미션 요청
