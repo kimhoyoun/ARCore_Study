@@ -89,8 +89,6 @@ public class CameraPreView {
 
         // 컴파일
         GLES20.glCompileShader(vShader);
-//        int[] compiled = new int[1];
-//        GLES20.glGetShaderiv(vShader, GLES20.GL_COMPILE_STATUS, compiled, 0);
 
         //텍스쳐
         int fShader = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
@@ -98,7 +96,6 @@ public class CameraPreView {
 
         // 컴파일
         GLES20.glCompileShader(fShader);
-//        GLES20.glGetShaderiv(fShader, GLES20.GL_COMPILE_STATUS, compiled, 0);
 
         mProgram = GLES20.glCreateProgram();
         GLES20.glAttachShader(mProgram, vShader);
