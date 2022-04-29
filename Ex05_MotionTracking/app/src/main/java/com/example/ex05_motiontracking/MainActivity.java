@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.display.DisplayManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -24,6 +25,9 @@ import com.google.ar.core.exceptions.CameraNotAvailableException;
 import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.TextView;
 
 import java.util.List;
 
@@ -33,21 +37,24 @@ public class MainActivity extends AppCompatActivity {
     Session mSession;
 
     GLSurfaceView mySurView;
-
+    TextView my_textView;
     MainRenderer mRenderer;
 
     Config mConfig; // ARCore session 설정정보를 받을 변수
 
     float displayX, displayY;
     boolean mTouched = false;
+    String ttt = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mySurView = (GLSurfaceView) findViewById(R.id.glsurfaceview);
+        hideStatusBar();
 
+        mySurView = (GLSurfaceView) findViewById(R.id.glsurfaceview);
+        my_textView = findViewById(R.id.my_textView);
         // MainActivity의 화면 관리 매니져 --> 화면변화를 감지 :: 현재 시스템에서 서비스지원
         DisplayManager displayManager = (DisplayManager) getSystemService(DISPLAY_SERVICE);
 
@@ -123,15 +130,30 @@ public class MainActivity extends AppCompatActivity {
 
 //                    Log.d("MainActivity", "건드렸다. (" + displayX+", "+displayY+")"+ "hitList : "+arr);
                     int i = 0;
+                    ttt = "";
                     for(HitResult hr: arr){
                         Pose pose = hr.getHitPose();
                         float[] xx = pose.getXAxis();
                         float[] yy = pose.getYAxis();
                         float[] zz = pose.getZAxis();
 
+                        // tx, ty, tz() : 이동값, qx, qy, qz() : 회전값
+                        mRenderer.addPoint(pose.tx(), pose.ty(), pose.tz());
+                        // x축 선그리기
+                        mRenderer.addLineX(xx, pose.tx(), pose.ty(), pose.tz());
+                        mRenderer.addLineY(yy, pose.tx(), pose.ty(), pose.tz());
+                        mRenderer.addLineZ(zz, pose.tx(), pose.ty(), pose.tz());
                         Log.d("Test" ,"i : "+i+", hr : "+ hr.toString()+", xAxis : "+xx+", yAxis : "+yy+", zAxis : "+zz);
+                        ttt += pose.toString()+"\n";
                         i++;
                     }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            my_textView.setText(ttt);
+
+                        }
+                    });
 
                     mTouched = false;
 
@@ -155,8 +177,11 @@ public class MainActivity extends AppCompatActivity {
                 camera.getProjectionMatrix(projMatrix,0,0.1f,100.0f);
                 camera.getViewMatrix(viewMatrix,0);
 
-                mRenderer.mPointCloud.updateMatrix(viewMatrix, projMatrix);
+//                mRenderer.mPointCloud.updateMatrix(viewMatrix, projMatrix);
+                mRenderer.updateProjMatrix(projMatrix);
+                mRenderer.updateViewMatrix(viewMatrix);
             }
+
         };
 
 
@@ -224,6 +249,14 @@ public class MainActivity extends AppCompatActivity {
 //
 
         return true;
+    }
+
+    void hideStatusBar(){
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN
+        );
     }
 
     // 카메라 퍼미션 요청

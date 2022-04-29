@@ -88,6 +88,8 @@ public class PointCloudRenderer {
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
     }
 
+
+
     // 카메라로 그리기
     void draw(){
         float [] mMVPMatrix = new float[16];
@@ -146,10 +148,19 @@ public class PointCloudRenderer {
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
     }
 
-    void updateMatrix(float[] mViewMatrix, float[] mProjMatrix){
-        // 배열 복제
-        //              원본      원본 시작위치    복사된 배열,   복사배열시작위치    갯수
-        System.arraycopy(mViewMatrix, 0, this.mViewMatrix, 0, 16);
+//    void updateMatrix(float[] mViewMatrix, float[] mProjMatrix){
+//        // 배열 복제
+//        //              원본      원본 시작위치    복사된 배열,   복사배열시작위치    갯수
+//        System.arraycopy(mViewMatrix, 0, this.mViewMatrix, 0, 16);
+//        System.arraycopy(mProjMatrix, 0, this.mProjMatrix, 0, 16);
+//    }
+
+    void updateProjMatrix(float[] projMatrix){
         System.arraycopy(mProjMatrix, 0, this.mProjMatrix, 0, 16);
     }
+
+    void updateViewMatrix(float[] viewMatrix){
+        System.arraycopy(mViewMatrix, 0, this.mViewMatrix, 0, 16);
+    }
+
 }

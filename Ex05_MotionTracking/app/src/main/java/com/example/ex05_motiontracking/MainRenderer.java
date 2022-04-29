@@ -1,7 +1,9 @@
 package com.example.ex05_motiontracking;
 
+import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 import android.util.Log;
 
 import com.google.ar.core.Session;
@@ -17,6 +19,7 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
 
     CameraPreView mCamera;
     PointCloudRenderer mPointCloud;
+    Sphere sphere;
 
     // 화면이 변환되었다면 true,
     boolean viewportChanged;
@@ -34,6 +37,7 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
 
         mCamera = new CameraPreView();
         mPointCloud = new PointCloudRenderer();
+        sphere = new Sphere();
 
         this.myCallBack = myCallBack;
 
@@ -47,6 +51,7 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
 
         mCamera.init();
         mPointCloud.init();
+        sphere.init();
     }
 
     @Override
@@ -79,6 +84,29 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
 
         // 포인트클라우드 그리기기
         mPointCloud.draw();
+
+        // 점 그리기
+        sphere.draw();
+        if(mLineX != null){
+            if(!mLineX.isInited){
+                mLineX.init();
+            }
+            mLineX.draw();
+        }
+
+        if(mLineY != null){
+            if(!mLineY.isInited){
+                mLineY.init();
+            }
+            mLineY.draw();
+        }
+
+        if(mLineZ != null){
+            if(!mLineZ.isInited){
+                mLineZ.init();
+            }
+            mLineZ.draw();
+        }
    }
 
     // 화면 변환이되었다는 것을 지시할 메소드 ==> MainActivity에서 실행할 것이다.
@@ -99,11 +127,72 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
         }
     }
     int getTextureId(){
-
         return mCamera== null ? -1 : mCamera.mTextures[0];
     }
 
-//    void transformDisplayGeometry(Frame frame){
-//        mCamera.transformDisplayGeometry(frame);
-//    }
+
+    // 객체를 만들고 매트릭스를 좌표값을 넣어서 만듦.
+    void addPoint(float x, float y, float z){
+        float[] matrix = new float[16];
+        Matrix.translateM(matrix, 0, x,y,z);
+
+        sphere.addNOCnt();
+        sphere.setmModelMatrix(matrix);
+//        System.arraycopy(matrix, 0, sphere.mModelMatrix, 0,16);
+    }
+
+    Line mLineX;
+    Line mLineY;
+    Line mLineZ;
+//    float[] projMatrix = new float[16];
+
+    void updateProjMatrix(float[] projMatrix){
+//        System.arraycopy(projMatrix,0, this.projMatrix, 0, 16);
+        mPointCloud.updateProjMatrix(projMatrix);
+        sphere.updateProjMatrix(projMatrix);
+        if(mLineX != null){
+            mLineX.updateProjMatrix(projMatrix);
+        }
+        if(mLineY != null){
+            mLineY.updateProjMatrix(projMatrix);
+        }
+        if(mLineZ != null){
+            mLineZ.updateProjMatrix(projMatrix);
+        }
+    }
+
+    void updateViewMatrix(float[] viewMatrix){
+        mPointCloud.updateViewMatrix(viewMatrix);
+        sphere.updateViewMatrix(viewMatrix);
+        if(mLineX != null){
+            mLineX.updateViewMatrix(viewMatrix);
+        }
+        if(mLineY != null){
+            mLineY.updateViewMatrix(viewMatrix);
+        }
+        if(mLineZ != null){
+            mLineZ.updateViewMatrix(viewMatrix);
+        }
+    }
+
+    void addLineX(float[] pps, float x, float y, float z){
+        mLineX = new Line(pps, x, y, z, Color.YELLOW);
+        float[] matrix = new float[16];
+        Matrix.translateM(matrix, 0, x,y,z);
+        mLineX.setmModelMatrix(matrix);
+    }
+
+    void addLineY(float[] pps, float x, float y, float z){
+        mLineY = new Line(pps, x, y, z, Color.GREEN);
+        float[] matrix = new float[16];
+        Matrix.translateM(matrix, 0, x,y,z);
+        mLineY.setmModelMatrix(matrix);
+    }
+
+    void addLineZ(float[] pps, float x, float y, float z){
+        mLineZ = new Line(pps, x, y, z, Color.BLUE);
+        float[] matrix = new float[16];
+        Matrix.translateM(matrix, 0, x,y,z);
+        mLineZ.setmModelMatrix(matrix);
+    }
 }

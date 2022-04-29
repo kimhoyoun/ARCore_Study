@@ -1,5 +1,6 @@
 package com.example.ex05_motiontracking;
 
+import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
@@ -8,7 +9,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-public class Sphere {
+public class Line {
     // GPU를 이용하여 고속 계산 하여 화면 처리 하기 위한 코드
     String vertexShaderString =
             "attribute vec3 aPosition; "+
@@ -39,96 +40,47 @@ public class Sphere {
     ShortBuffer mIndices;
     int mProgram;
 
+    boolean isInited = false;
+
     final int POINT_COUNT = 20;
 
-    int currNO = 0;
-    float[][] mColorArr = {
-            {0.2f, 0.5f, 0.8f, 1.0f},
-            {1.0f, 0.5f, 0.2f, 1.0f},
-            {1.0f, 1.0f, 0.0f, 1.0f},
-            {0.0f, 1.0f, 0.0f, 1.0f},
-            {0.2f, 1.0f, 0.0f, 1.0f},
-    };
+    public Line(float[] end, float x, float y, float z, int color){
 
-    FloatBuffer[] mColorsArr = new FloatBuffer[mColorArr.length];
+        float [] vertices = {x, y, z, end[0], end[1], end[2]};
 
-    void addNOCnt(){
-        currNO++;
-        currNO %= mColorArr.length;
-    }
+        mColor = new float[]{
+                Color.red(color)/255,
+                Color.green(color)/255,
+                Color.blue(color)/255,
+                1.0f,
+                Color.red(color)/255,
+                Color.green(color)/255,
+                Color.blue(color)/255,
+                1.0f
 
-    public Sphere(){
 
-        float radius = 0.05f;
-        // POINT_COUNT * POINT_COUNT * 3 (삼각형)
-        // 20 * 20 개의 삼각형으로 이루어진 구
-        float[] vertices = new float[POINT_COUNT * POINT_COUNT * 3];
+        };
 
-        // 구를 만드는 점의 정보 ---> 수학 개념 필요
-        for (int i = 0; i < POINT_COUNT; i++) {
-            for (int j = 0; j < POINT_COUNT; j++) {
-                float theta = i * (float) Math.PI / (POINT_COUNT - 1);
-                float phi = j * 2 * (float) Math.PI / (POINT_COUNT - 1);
-                float x = (float) (radius * Math.sin(theta) * Math.cos(phi));
-                float y = (float) (radius * Math.cos(theta));
-                float z = (float) -(radius * Math.sin(theta) * Math.sin(phi));
-                int index = i * POINT_COUNT + j;
-                vertices[3 * index] = x;
-                vertices[3 * index + 1] = y;
-                vertices[3 * index + 2] = z;
-            }
-        }
+        short[] indices = {0,1};
 
-        float[] colors = new float[POINT_COUNT * POINT_COUNT * 4];
 
-        // 색상정보 : POINT_COUNT * POINT_COUNT * 4
-        //              면(삼각형(갯수)   *   (rgba)
-        for(int i =0; i<POINT_COUNT; i++){
-            for(int j =0; j<POINT_COUNT; j++){
-                int index = i * POINT_COUNT;
-                colors[4*index + 0] = mColor[0];
-                colors[4*index + 1] = mColor[1];
-                colors[4*index + 2] = mColor[2];
-                colors[4*index + 3] = mColor[3];
-            }
-        }
 
-        // 삼각형들 그리는 점의 순서 정보
-        int numIndices = 2 * (POINT_COUNT - 1) * POINT_COUNT;
-        short[] indices = new short[numIndices];
-        short index = 0;
-        for (int i = 0; i < POINT_COUNT - 1; i++) {
-            if ((i & 1) == 0) {
-                for (int j = 0; j < POINT_COUNT; j++) {
-                    indices[index++] = (short) (i * POINT_COUNT + j);
-                    indices[index++] = (short) ((i + 1) * POINT_COUNT + j);
-                }
-            } else {
-                for (int j = POINT_COUNT - 1; j >= 0; j--) {
-                    indices[index++] = (short) ((i + 1) * POINT_COUNT + j);
-                    indices[index++] = (short) (i * POINT_COUNT + j);
-                }
-            }
-        }
-
-        // buffer로 전환
-        // 점
         mVertices =  ByteBuffer.allocateDirect(vertices.length*4)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         mVertices.put(vertices);
         mVertices.position(0);
 
-        mColors =  ByteBuffer.allocateDirect(colors.length*4)
+        mColors =  ByteBuffer.allocateDirect(mColor.length*4)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mColors.put(colors);
+        mColors.put(mColor);
         mColors.position(0);
 
         mIndices =  ByteBuffer.allocateDirect(indices.length*2)
                 .order(ByteOrder.nativeOrder()).asShortBuffer();
         mIndices.put(indices);
         mIndices.position(0);
-
     }
+
     // 초기화화
     void init(){
         int vShader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
@@ -144,6 +96,8 @@ public class Sphere {
         GLES20.glAttachShader(mProgram, vShader);
         GLES20.glAttachShader(mProgram, fShader);
         GLES20.glLinkProgram(mProgram);
+
+        isInited = true;
     }
 
 
@@ -167,22 +121,17 @@ public class Sphere {
 
         // 점, 색 번호에 해당하는 변수에 각각 대입
         // 점 float * 3 (삼각형)
-        GLES20.glVertexAttribPointer(position, 3, GLES20.GL_FLOAT, false, 4 * 3, mVertices);
-
-        // :::: 선생님 힌트 ::::
-        // 구가 만들어지는 시점 draw
-        // 점 float * rgba
-        GLES20.glVertexAttribPointer(color, 3, GLES20.GL_FLOAT, false, 4 * 3, mColors);
-//        GLES20.glVertexAttribPointer(color, 3, GLES20.GL_FLOAT, false, 4 * 3, mColorsArr);
-
+        GLES20.glVertexAttribPointer(position,3,GLES20.GL_FLOAT, false, 4*3, mVertices);
+        // 색 float * rbga
+        GLES20.glVertexAttribPointer(color,3,GLES20.GL_FLOAT, false, 4*3, mColors);
 
         // GPU 활성화
         GLES20.glEnableVertexAttribArray(position);
         GLES20.glEnableVertexAttribArray(color);
-
+        GLES20.glLineWidth(1.0f);
         // 그린다
         //                     삼각형으로 그린다.       순서의 보유량,        순서 자료형,             순서내용
-        GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, mIndices.capacity(), GLES20.GL_UNSIGNED_SHORT, mIndices);
+        GLES20.glDrawElements(GLES20.GL_LINES, mIndices.capacity(), GLES20.GL_UNSIGNED_SHORT, mIndices);
 
         // 비활성화
         GLES20.glDisableVertexAttribArray(position);
@@ -201,6 +150,4 @@ public class Sphere {
     void updateViewMatrix(float[] viewMatrix){
         System.arraycopy(mViewMatrix, 0, this.mViewMatrix, 0, 16);
     }
-
-
 }
