@@ -15,12 +15,13 @@ public class CameraPreView {
     // 점
     // GPU를 이용하여 고속 계산 하여 화면 처리 하기 위한 코드
     String vertexShaderCode =
+            "attribute vec4 vPosition;"+
             "attribute vec2 aTexCoord;"+
             "varying vec2 vTexCoord;"+
-            "attribute vec4 vPosition;"+
+
             "void main () {" +
-                 "gl_Position = vPosition;"+
                  "vTexCoord = aTexCoord;"+
+                 "gl_Position = vPosition;"+
             "}";
 
     String fragmentShaderCode =

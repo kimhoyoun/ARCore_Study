@@ -49,9 +49,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        hideStatusBar();
         setContentView(R.layout.activity_main);
 
-        hideStatusBar();
 
         mySurView = (GLSurfaceView) findViewById(R.id.glsurfaceview);
         my_textView = findViewById(R.id.my_textView);
@@ -195,8 +195,7 @@ public class MainActivity extends AppCompatActivity {
         // 새로 정의한 MainRenderer를 사용한다.
         mySurView.setRenderer(mRenderer);
 
-        // 랜더링 계속 호출
-        mySurView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+
     }
 
     @Override
@@ -239,6 +238,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mySurView.onResume();
+        // 랜더링 계속 호출
+        mySurView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
     }
 
     @Override

@@ -13,7 +13,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class MainRenderer implements GLSurfaceView.Renderer  {
 
-    final static String TAG = "MainRenderer :";
+//    final static String TAG = "MainRenderer :";
 
     RenderCallBack myCallBack;
 
@@ -47,6 +47,8 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Log.d("MainRenderer","onSurfaceCreated() 실행");
 
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+
         GLES20.glClearColor(1.0f,1.0f,0.0f,1.0f); // 1이 제일 큰거 0은 없는거
 
         mCamera.init();
@@ -56,7 +58,7 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        Log.d("MainRenderer","onSurfaceChanged() 실행");
+//        Log.d("MainRenderer","onSurfaceChanged() 실행");
 
         GLES20.glViewport(0,0,width,height);
 
@@ -69,7 +71,7 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
     // 실질적으로 그리는 애
     @Override
     public void onDrawFrame(GL10 gl) {
-        Log.d("MainRenderer","onDrawFrame() 실행");
+//        Log.d("MainRenderer","onDrawFrame() 실행");
 
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT|GLES20.GL_DEPTH_BUFFER_BIT);
 
@@ -112,7 +114,7 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
     // 화면 변환이되었다는 것을 지시할 메소드 ==> MainActivity에서 실행할 것이다.
     void onDisplayChanged(){
         viewportChanged = true;
-        Log.d("MainRenderer : ","onDisplayChanged 실행");
+//        Log.d("MainRenderer : ","onDisplayChanged 실행");
     }
 
     // session 업데이트시 화면 변환 상태를 보고 session 의 화면을 변경한다.
@@ -134,6 +136,7 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
     // 객체를 만들고 매트릭스를 좌표값을 넣어서 만듦.
     void addPoint(float x, float y, float z){
         float[] matrix = new float[16];
+        Matrix.setIdentityM(matrix, 0);
         Matrix.translateM(matrix, 0, x,y,z);
 
         sphere.addNOCnt();
@@ -176,8 +179,9 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
     }
 
     void addLineX(float[] pps, float x, float y, float z){
-        mLineX = new Line(pps, x, y, z, Color.YELLOW);
+        mLineX = new Line(pps, x, y, z, Color.RED);
         float[] matrix = new float[16];
+        Matrix.setIdentityM(matrix,0);
         Matrix.translateM(matrix, 0, x,y,z);
         mLineX.setmModelMatrix(matrix);
     }
@@ -185,6 +189,7 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
     void addLineY(float[] pps, float x, float y, float z){
         mLineY = new Line(pps, x, y, z, Color.GREEN);
         float[] matrix = new float[16];
+        Matrix.setIdentityM(matrix,0);
         Matrix.translateM(matrix, 0, x,y,z);
         mLineY.setmModelMatrix(matrix);
     }
@@ -192,6 +197,7 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
     void addLineZ(float[] pps, float x, float y, float z){
         mLineZ = new Line(pps, x, y, z, Color.BLUE);
         float[] matrix = new float[16];
+        Matrix.setIdentityM(matrix,0);
         Matrix.translateM(matrix, 0, x,y,z);
         mLineZ.setmModelMatrix(matrix);
     }

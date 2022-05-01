@@ -3,6 +3,7 @@ package com.example.ex05_motiontracking;
 import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -33,7 +34,7 @@ public class Line {
     float[] mViewMatrix = new float[16];
     float[] mProjMatrix = new float[16];
 
-    float[] mColor = {1.0f, 0.5f, 0.3f, 1.0f};
+//    float[] mColor = {1.0f, 0.5f, 0.3f, 1.0f};
 
     FloatBuffer mVertices;
     FloatBuffer mColors;
@@ -48,14 +49,14 @@ public class Line {
 
         float [] vertices = {x, y, z, end[0], end[1], end[2]};
 
-        mColor = new float[]{
-                Color.red(color)/255,
-                Color.green(color)/255,
-                Color.blue(color)/255,
+        float[] mColor = new float[]{
+                Color.red(color)/255.f,
+                Color.green(color)/255.f,
+                Color.blue(color)/255.f,
                 1.0f,
-                Color.red(color)/255,
-                Color.green(color)/255,
-                Color.blue(color)/255,
+                Color.red(color)/255.f,
+                Color.green(color)/255.f,
+                Color.blue(color)/255.f,
                 1.0f
 
 
@@ -79,6 +80,8 @@ public class Line {
                 .order(ByteOrder.nativeOrder()).asShortBuffer();
         mIndices.put(indices);
         mIndices.position(0);
+
+        Log.d("선이야:",Color.red(color)+","+Color.green(color)+","+Color.blue(color));
     }
 
     // 초기화화
@@ -119,16 +122,19 @@ public class Line {
         // mvp 번호에 해당하는 변수에 mvpMatrix 대입
         GLES20.glUniformMatrix4fv(mvp, 1, false, mvpMatrix, 0);
 
-        // 점, 색 번호에 해당하는 변수에 각각 대입
-        // 점 float * 3 (삼각형)
-        GLES20.glVertexAttribPointer(position,3,GLES20.GL_FLOAT, false, 4*3, mVertices);
-        // 색 float * rbga
-        GLES20.glVertexAttribPointer(color,3,GLES20.GL_FLOAT, false, 4*3, mColors);
+
 
         // GPU 활성화
         GLES20.glEnableVertexAttribArray(position);
         GLES20.glEnableVertexAttribArray(color);
-        GLES20.glLineWidth(1.0f);
+
+        // 점, 색 번호에 해당하는 변수에 각각 대입
+        // 점 float * 3 (삼각형)
+        GLES20.glVertexAttribPointer(position,3,GLES20.GL_FLOAT, false, 4*3, mVertices);
+        // 색 float * rbga
+        GLES20.glVertexAttribPointer(color,3,GLES20.GL_FLOAT, false, 4*4, mColors);
+
+        GLES20.glLineWidth(10.0f);
         // 그린다
         //                     삼각형으로 그린다.       순서의 보유량,        순서 자료형,             순서내용
         GLES20.glDrawElements(GLES20.GL_LINES, mIndices.capacity(), GLES20.GL_UNSIGNED_SHORT, mIndices);
@@ -144,10 +150,10 @@ public class Line {
     }
 
     void updateProjMatrix(float[] projMatrix){
-        System.arraycopy(mProjMatrix, 0, this.mProjMatrix, 0, 16);
+        System.arraycopy(projMatrix, 0, this.mProjMatrix, 0, 16);
     }
 
     void updateViewMatrix(float[] viewMatrix){
-        System.arraycopy(mViewMatrix, 0, this.mViewMatrix, 0, 16);
+        System.arraycopy(viewMatrix, 0, this.mViewMatrix, 0, 16);
     }
 }

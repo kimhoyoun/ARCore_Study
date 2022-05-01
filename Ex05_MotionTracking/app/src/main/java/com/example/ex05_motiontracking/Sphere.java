@@ -128,6 +128,26 @@ public class Sphere {
         mIndices.put(indices);
         mIndices.position(0);
 
+        float [][] colorsArr = new float[mColorArr.length][POINT_COUNT * POINT_COUNT * 4];
+
+        for (int f = 0;f< mColorArr.length; f++ ) {
+
+            float [] buf = mColorArr[f];
+            for (int i = 0; i < POINT_COUNT ; i++) {
+                for (int j = 0; j < POINT_COUNT; j++) {
+                    int ind = i * POINT_COUNT + j;
+                    colorsArr[f][4 * ind + 0 ] = buf[0];
+                    colorsArr[f][4 * ind + 1 ] = buf[1];
+                    colorsArr[f][4 * ind + 2 ] = buf[2];
+                    colorsArr[f][4 * ind + 3 ] = buf[3];
+                }
+            }
+            mColorsArr[f] = ByteBuffer.allocateDirect(colorsArr[f].length * 4)
+                    .order(ByteOrder.nativeOrder()).asFloatBuffer();
+            mColorsArr[f].put(colorsArr[f]);
+            mColorsArr[f].position(0);
+        }
+
     }
     // 초기화화
     void init(){
@@ -172,8 +192,8 @@ public class Sphere {
         // :::: 선생님 힌트 ::::
         // 구가 만들어지는 시점 draw
         // 점 float * rgba
-        GLES20.glVertexAttribPointer(color, 3, GLES20.GL_FLOAT, false, 4 * 3, mColors);
-//        GLES20.glVertexAttribPointer(color, 3, GLES20.GL_FLOAT, false, 4 * 3, mColorsArr);
+//        GLES20.glVertexAttribPointer(color, 3, GLES20.GL_FLOAT, false, 4 * 3, mColors);
+        GLES20.glVertexAttribPointer(color, 3, GLES20.GL_FLOAT, false, 4 * 3, mColorsArr[currNO]);
 
 
         // GPU 활성화
