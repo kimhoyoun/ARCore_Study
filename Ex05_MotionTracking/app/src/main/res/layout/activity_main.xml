@@ -20,4 +20,46 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/mySeekBar"
+        android:gravity="center">
+        <Button
+            android:id="@+id/btnRed"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:text="빨강"
+            android:layout_margin="5dp"/>
+        <Button
+            android:id="@+id/btnGreen"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:text="초록"
+            android:layout_margin="5dp"/>
+        <Button
+            android:id="@+id/btnBlue"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:text="파랑"
+            android:layout_margin="5dp"/>
+        <Button
+            android:id="@+id/btnYellow"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:text="노랑"
+            android:layout_margin="5dp"/>
+
+    </LinearLayout>
+    <SeekBar
+        android:id="@+id/mySeekBar"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:max="100"
+        />
+
 </RelativeLayout>

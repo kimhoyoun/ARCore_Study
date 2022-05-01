@@ -25,13 +25,16 @@ import com.google.ar.core.exceptions.CameraNotAvailableException;
 import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     //com.google.ar.core.Session;
     Session mSession;
@@ -39,12 +42,23 @@ public class MainActivity extends AppCompatActivity {
     GLSurfaceView mySurView;
     TextView my_textView;
     MainRenderer mRenderer;
+    Button btnRED;
+    Button btnGREEN;
+    Button btnBLUE;
+    Button btnYELLOW;
+    SeekBar mySeekBar;
 
     Config mConfig; // ARCore session 설정정보를 받을 변수
 
     float displayX, displayY;
     boolean mTouched = false;
     String ttt = "";
+
+    float lineWidth = 10.0f;
+    int color= Color.RED;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,8 +69,48 @@ public class MainActivity extends AppCompatActivity {
 
         mySurView = (GLSurfaceView) findViewById(R.id.glsurfaceview);
         my_textView = findViewById(R.id.my_textView);
+        mySeekBar = findViewById(R.id.mySeekBar);
+        btnRED = findViewById(R.id.btnRed);
+        btnGREEN = findViewById(R.id.btnGreen);
+        btnBLUE = findViewById(R.id.btnBlue);
+        btnYELLOW = findViewById(R.id.btnYellow);
+
+        btnRED.setOnClickListener(this);
+        btnGREEN.setOnClickListener(this);
+        btnBLUE.setOnClickListener(this);
+        btnYELLOW.setOnClickListener(this);
+
         // MainActivity의 화면 관리 매니져 --> 화면변화를 감지 :: 현재 시스템에서 서비스지원
         DisplayManager displayManager = (DisplayManager) getSystemService(DISPLAY_SERVICE);
+
+
+
+        mySeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(seekBar.getProgress() > 10) {
+                    lineWidth = 10.0f * seekBar.getProgress() / 10;
+                }else{
+                    lineWidth = 10.0f;
+                }
+
+                mRenderer.mLineX.changeLineWidth(lineWidth);
+                mRenderer.mLineY.changeLineWidth(lineWidth);
+                mRenderer.mLineZ.changeLineWidth(lineWidth);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+
+
+            }
+        });
 
         // 화면 변화가 발생되면 MainRenderer의 화면변환을 실행시킨다.
         if(displayManager != null){
@@ -82,6 +136,8 @@ public class MainActivity extends AppCompatActivity {
             }, null
             );
         }
+
+
 
         MainRenderer.RenderCallBack mr = new MainRenderer.RenderCallBack() {
             @Override
@@ -140,9 +196,9 @@ public class MainActivity extends AppCompatActivity {
                         // tx, ty, tz() : 이동값, qx, qy, qz() : 회전값
                         mRenderer.addPoint(pose.tx(), pose.ty(), pose.tz());
                         // x축 선그리기
-                        mRenderer.addLineX(xx, pose.tx(), pose.ty(), pose.tz());
-                        mRenderer.addLineY(yy, pose.tx(), pose.ty(), pose.tz());
-                        mRenderer.addLineZ(zz, pose.tx(), pose.ty(), pose.tz());
+                        mRenderer.addLineX(xx, pose.tx(), pose.ty(), pose.tz(), lineWidth);
+                        mRenderer.addLineY(yy, pose.tx(), pose.ty(), pose.tz(), lineWidth);
+                        mRenderer.addLineZ(zz, pose.tx(), pose.ty(), pose.tz(), lineWidth);
                         Log.d("Test" ,"i : "+i+", hr : "+ hr.toString()+", xAxis : "+xx+", yAxis : "+yy+", zAxis : "+zz);
                         ttt += pose.toString()+"\n";
                         i++;
@@ -160,13 +216,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }
 
-
-
-
-
                 // 화면 터치시 작업 끝
-
-
                 // 카메라 frame에서 받는다.
                 // 용도 : mPointCloud에서 렌더링할 때 카메라의 좌표계산을 받아서 처리
                 Camera camera = frame.getCamera();
@@ -268,6 +318,28 @@ public class MainActivity extends AppCompatActivity {
                     new String[] {Manifest.permission.CAMERA},
                     0
             );
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.btnRed:
+                color = Color.RED;
+                mRenderer.sphere.colorChange(color);
+                break;
+            case R.id.btnGreen:
+                color = Color.GREEN;
+                mRenderer.sphere.colorChange(color);
+                break;
+            case R.id.btnBlue:
+                color = Color.BLUE;
+                mRenderer.sphere.colorChange(color);
+                break;
+            case R.id.btnYellow:
+                color = Color.YELLOW;
+                mRenderer.sphere.colorChange(color);
+                break;
         }
     }
 }

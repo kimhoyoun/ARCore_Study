@@ -156,11 +156,11 @@ public class PointCloudRenderer {
 //    }
 
     void updateProjMatrix(float[] projMatrix){
-        System.arraycopy(mProjMatrix, 0, this.mProjMatrix, 0, 16);
+        System.arraycopy(projMatrix, 0, this.mProjMatrix, 0, 16);
     }
 
     void updateViewMatrix(float[] viewMatrix){
-        System.arraycopy(mViewMatrix, 0, this.mViewMatrix, 0, 16);
+        System.arraycopy(viewMatrix, 0, this.mViewMatrix, 0, 16);
     }
 
 }

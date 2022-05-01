@@ -45,8 +45,14 @@ public class Line {
 
     final int POINT_COUNT = 20;
 
-    public Line(float[] end, float x, float y, float z, int color){
+    float lineWidth = 10.0f;
 
+    void changeLineWidth(float lineWidth){
+        this.lineWidth = lineWidth;
+    }
+
+    public Line(float[] end, float x, float y, float z, int color, float lineWidth){
+        this.lineWidth = lineWidth;
         float [] vertices = {x, y, z, end[0], end[1], end[2]};
 
         float[] mColor = new float[]{
@@ -59,12 +65,9 @@ public class Line {
                 Color.blue(color)/255.f,
                 1.0f
 
-
         };
 
         short[] indices = {0,1};
-
-
 
         mVertices =  ByteBuffer.allocateDirect(vertices.length*4)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -122,8 +125,6 @@ public class Line {
         // mvp 번호에 해당하는 변수에 mvpMatrix 대입
         GLES20.glUniformMatrix4fv(mvp, 1, false, mvpMatrix, 0);
 
-
-
         // GPU 활성화
         GLES20.glEnableVertexAttribArray(position);
         GLES20.glEnableVertexAttribArray(color);
@@ -134,7 +135,10 @@ public class Line {
         // 색 float * rbga
         GLES20.glVertexAttribPointer(color,3,GLES20.GL_FLOAT, false, 4*4, mColors);
 
-        GLES20.glLineWidth(10.0f);
+
+
+
+        GLES20.glLineWidth(lineWidth);
         // 그린다
         //                     삼각형으로 그린다.       순서의 보유량,        순서 자료형,             순서내용
         GLES20.glDrawElements(GLES20.GL_LINES, mIndices.capacity(), GLES20.GL_UNSIGNED_SHORT, mIndices);

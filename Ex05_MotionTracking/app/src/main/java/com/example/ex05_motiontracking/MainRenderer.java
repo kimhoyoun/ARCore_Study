@@ -71,7 +71,7 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
     // 실질적으로 그리는 애
     @Override
     public void onDrawFrame(GL10 gl) {
-//        Log.d("MainRenderer","onDrawFrame() 실행");
+        Log.d("MainRenderer","onDrawFrame() 실행");
 
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT|GLES20.GL_DEPTH_BUFFER_BIT);
 
@@ -85,7 +85,7 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
         GLES20.glDepthMask(true);
 
         // 포인트클라우드 그리기기
-        mPointCloud.draw();
+//        mPointCloud.draw();
 
         // 점 그리기
         sphere.draw();
@@ -139,8 +139,10 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
         Matrix.setIdentityM(matrix, 0);
         Matrix.translateM(matrix, 0, x,y,z);
 
-        sphere.addNOCnt();
+//        sphere.addNOCnt();
+//        sphere.colorChange(color);
         sphere.setmModelMatrix(matrix);
+
 //        System.arraycopy(matrix, 0, sphere.mModelMatrix, 0,16);
     }
 
@@ -178,24 +180,24 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
         }
     }
 
-    void addLineX(float[] pps, float x, float y, float z){
-        mLineX = new Line(pps, x, y, z, Color.RED);
+    void addLineX(float[] pps, float x, float y, float z, float lineWidth){
+        mLineX = new Line(pps, x, y, z, Color.RED, lineWidth);
         float[] matrix = new float[16];
         Matrix.setIdentityM(matrix,0);
         Matrix.translateM(matrix, 0, x,y,z);
         mLineX.setmModelMatrix(matrix);
     }
 
-    void addLineY(float[] pps, float x, float y, float z){
-        mLineY = new Line(pps, x, y, z, Color.GREEN);
+    void addLineY(float[] pps, float x, float y, float z, float lineWidth){
+        mLineY = new Line(pps, x, y, z, Color.GREEN, lineWidth);
         float[] matrix = new float[16];
         Matrix.setIdentityM(matrix,0);
         Matrix.translateM(matrix, 0, x,y,z);
         mLineY.setmModelMatrix(matrix);
     }
 
-    void addLineZ(float[] pps, float x, float y, float z){
-        mLineZ = new Line(pps, x, y, z, Color.BLUE);
+    void addLineZ(float[] pps, float x, float y, float z, float lineWidth){
+        mLineZ = new Line(pps, x, y, z, Color.BLUE, lineWidth);
         float[] matrix = new float[16];
         Matrix.setIdentityM(matrix,0);
         Matrix.translateM(matrix, 0, x,y,z);

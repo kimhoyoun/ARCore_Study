@@ -1,5 +1,6 @@
 package com.example.ex05_motiontracking;
 
+import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
@@ -33,6 +34,15 @@ public class Sphere {
     float[] mProjMatrix = new float[16];
 
     float[] mColor = {1.0f, 0.5f, 0.3f, 1.0f};
+    // 빨 초 파 노
+    float[][] mColorArray = {
+            {1.0f, 0.0f, 0f, 1.0f},
+            {0.0f, 1.0f, 0f, 1.0f},
+            {0.0f, 0.0f, 1.0f, 1.0f},
+            {1.0f, 1.0f, 0f, 1.0f},
+    };
+
+    int colorIndex = 0;
 
     FloatBuffer mVertices;
     FloatBuffer mColors;
@@ -41,20 +51,38 @@ public class Sphere {
 
     final int POINT_COUNT = 20;
 
-    int currNO = 0;
-    float[][] mColorArr = {
-            {0.2f, 0.5f, 0.8f, 1.0f},
-            {1.0f, 0.5f, 0.2f, 1.0f},
-            {1.0f, 1.0f, 0.0f, 1.0f},
-            {0.0f, 1.0f, 0.0f, 1.0f},
-            {0.2f, 1.0f, 0.0f, 1.0f},
-    };
+//    int currNO = 0;
+//    float[][] mColorArr = {
+//            {0.2f, 0.5f, 0.8f, 1.0f},
+//            {1.0f, 0.5f, 0.2f, 1.0f},
+//            {1.0f, 1.0f, 0.0f, 1.0f},
+//            {0.0f, 1.0f, 0.0f, 1.0f},
+//            {0.2f, 1.0f, 0.0f, 1.0f},
+//    };
 
-    FloatBuffer[] mColorsArr = new FloatBuffer[mColorArr.length];
+//    FloatBuffer[] mColorsArr = new FloatBuffer[mColorArr.length];
+    FloatBuffer[] mColorsArr = new FloatBuffer[mColorArray.length];
 
-    void addNOCnt(){
-        currNO++;
-        currNO %= mColorArr.length;
+//    void addNOCnt(){
+//        currNO++;
+//        currNO %= mColorArr.length;
+//    }
+
+    void colorChange(int color){
+        switch (color){
+            case Color.RED:
+                colorIndex = 0;
+                break;
+            case Color.GREEN:
+                colorIndex = 1;
+                break;
+            case Color.BLUE:
+                colorIndex = 2;
+                break;
+            case Color.YELLOW:
+                colorIndex = 3;
+                break;
+        }
     }
 
     public Sphere(){
@@ -128,11 +156,14 @@ public class Sphere {
         mIndices.put(indices);
         mIndices.position(0);
 
-        float [][] colorsArr = new float[mColorArr.length][POINT_COUNT * POINT_COUNT * 4];
+//        float [][] colorsArr = new float[mColorArr.length][POINT_COUNT * POINT_COUNT * 4];
+        float [][] colorsArr = new float[mColorArray.length][POINT_COUNT * POINT_COUNT * 4];
 
-        for (int f = 0;f< mColorArr.length; f++ ) {
+//        for (int f = 0;f< mColorArr.length; f++ ) {
+        for (int f = 0;f< mColorArray.length; f++ ) {
 
-            float [] buf = mColorArr[f];
+//            float [] buf = mColorArr[f];
+            float [] buf = mColorArray[f];
             for (int i = 0; i < POINT_COUNT ; i++) {
                 for (int j = 0; j < POINT_COUNT; j++) {
                     int ind = i * POINT_COUNT + j;
@@ -193,7 +224,8 @@ public class Sphere {
         // 구가 만들어지는 시점 draw
         // 점 float * rgba
 //        GLES20.glVertexAttribPointer(color, 3, GLES20.GL_FLOAT, false, 4 * 3, mColors);
-        GLES20.glVertexAttribPointer(color, 3, GLES20.GL_FLOAT, false, 4 * 3, mColorsArr[currNO]);
+//        GLES20.glVertexAttribPointer(color, 3, GLES20.GL_FLOAT, false, 4 * 4, mColorsArr[currNO]);
+        GLES20.glVertexAttribPointer(color, 3, GLES20.GL_FLOAT, false, 4 * 4, mColorsArr[colorIndex]);
 
 
         // GPU 활성화
@@ -210,16 +242,19 @@ public class Sphere {
 
     }
 
+
+
     void setmModelMatrix(float [] matrix){
+
         System.arraycopy(matrix,0,mModelMatrix,0,16);
     }
 
     void updateProjMatrix(float[] projMatrix){
-        System.arraycopy(mProjMatrix, 0, this.mProjMatrix, 0, 16);
+        System.arraycopy(projMatrix, 0, this.mProjMatrix, 0, 16);
     }
 
     void updateViewMatrix(float[] viewMatrix){
-        System.arraycopy(mViewMatrix, 0, this.mViewMatrix, 0, 16);
+        System.arraycopy(viewMatrix, 0, this.mViewMatrix, 0, 16);
     }
 
 
