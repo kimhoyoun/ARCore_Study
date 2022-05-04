@@ -21,7 +21,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     public MyGLRenderer(Context context){
 
-        myTable = new ObjRenderer(context,"table.obj", "table.jpg");
+        myTable = new ObjRenderer(context,"earth.obj", "earth.png");
     }
 
     @Override
@@ -44,7 +44,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
         // 사각형의 중심을 어떻게해서 그리겠다.
         // 어떻게 넣어주겟느냐
-        Matrix.frustumM(mProjectionMatrix, 0,-ratio,ratio,-100,100,20,100);
+        Matrix.frustumM(mProjectionMatrix, 0,-ratio,ratio,-50,50,10,20);
     }
 
     @Override

@@ -8,14 +8,18 @@ import androidx.viewpager.widget.PagerAdapter;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.hardware.display.DisplayManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.google.ar.core.ArCoreApk;
@@ -23,6 +27,7 @@ import com.google.ar.core.Camera;
 import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
 import com.google.ar.core.HitResult;
+import com.google.ar.core.LightEstimate;
 import com.google.ar.core.Plane;
 import com.google.ar.core.PointCloud;
 import com.google.ar.core.Pose;
@@ -40,6 +45,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    SeekBar seekBar;
     TextView myTextView;
     GLSurfaceView mSurfaceView;
     MainRenderer mRenderer;
@@ -53,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     float mCurrentX, mCurrentY;
     boolean mTouched = false;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
         mSurfaceView = findViewById(R.id.glsurfaceview);
         myTextView = findViewById(R.id.myTextView);
+        seekBar = findViewById(R.id.seekBar);
         DisplayManager displayManager = (DisplayManager) getSystemService(DISPLAY_SERVICE);
         if(displayManager != null){
             displayManager.registerDisplayListener(new DisplayManager.DisplayListener() {
@@ -82,6 +91,25 @@ public class MainActivity extends AppCompatActivity {
                 }
             },null);
         }
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                mRenderer.mObj.setLightIntensity((float) progress/100);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
 
         mRenderer = new MainRenderer(this, new MainRenderer.RenderCallback() {
             @Override
@@ -111,8 +139,19 @@ public class MainActivity extends AppCompatActivity {
                 pointCloud.release();
 
 
-                // 타치하였다면
+                // 터치하였다면
                 if(mTouched){
+
+                    LightEstimate estimate = frame.getLightEstimate();
+                    // LightEstimate :: 빛에 대한 정보를 가지는 클래스
+                    // getPixelIntensity() :: 빛의 강도 0.0 ~ 1.0
+
+//                    float lightIntensity = estimate.getPixelIntensity();
+
+
+                    float [] colorCorrection = new float[4];
+                    // 빛의 색깔 가져오기
+                    estimate.getColorCorrection(colorCorrection, 0);
                     List<HitResult> results = frame.hitTest(mCurrentX, mCurrentY);
                     // 증강현실로 얻어온 좌표가 plane이 어디에 있는지 맞추고 그 위에 올려줘야함.
                     for(HitResult result : results){
@@ -130,6 +169,13 @@ public class MainActivity extends AppCompatActivity {
                             // 큐브의 modelMatrix를 터치한 증강현실 modelMatrix로 설정
                             // cube의 model matrix 를 내가 터치한 위치의 matrix로 update 시켜줌.
 //                            mRenderer.mCube.setModelMatrix(modelMatrix);
+
+                            // 빛의 세기값을 넘긴다.
+//                            mRenderer.mObj.setLightIntensity(lightIntensity);
+
+                            // 빛의 색을 magenta로 강제화 시킴
+//                            mRenderer.mObj.setColorCorrection(new float[]{1.0f, 0.0f, 1.0f, 1.0f});
+//                            mRenderer.mObj.setColorCorrection(colorCorrection);
                             mRenderer.mObj.setModelMatrix(modelMatrix);
                         }
 
@@ -261,5 +307,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return true;
+    }
+
+    public void btnClick(View view){
+        float[] newColor = new float[4];
+        ColorDrawable cd = (ColorDrawable) view.getBackground();
+        int color = cd.getColor();
+        newColor[0] = Color.red(color)/255f;
+        newColor[1] = Color.green(color)/255f;
+        newColor[2] = Color.blue(color)/255f;
+        newColor[3] = Color.alpha(color)/255f;
+
+        mRenderer.mObj.setColorCorrection(newColor);
     }
 }

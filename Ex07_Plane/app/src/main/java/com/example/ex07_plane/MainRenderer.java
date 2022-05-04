@@ -32,7 +32,7 @@ public class MainRenderer implements GLSurfaceView.Renderer {
         mPlane = new PlaneRenderer(Color.BLUE, 0.7f);
 
         mCube = new Cube(0.3f, Color.YELLOW, 0.8f);
-        mObj = new ObjRenderer(context, "abc.obj", "abc.png");
+        mObj = new ObjRenderer(context, "andy.obj", "andy.png");
     }
 
     interface RenderCallback{

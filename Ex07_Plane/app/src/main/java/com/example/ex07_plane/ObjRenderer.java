@@ -44,13 +44,17 @@ public class ObjRenderer {
                     "uniform sampler2D uTexture;\n" +
                     "uniform vec4 uLighting;\n" +
                     "uniform vec4 uMaterial;\n" +
+                    "uniform vec4 uColorCorrection;\n" +
                     "varying vec3 vPosition;\n" +
                     "varying vec3 vNormal;\n" +
                     "varying vec2 vTexCoord;\n" +
                     "void main() {\n" +
                     "    const float kGamma = 0.4545454;\n" +
                     "    const float kInverseGamma = 2.2;\n" +
+                    "    const float kMiddleGrayGamma = 0.466;\n" +
                     "    vec3 viewLightDirection = uLighting.xyz;\n" +
+                    "    vec3 colorShift = uColorCorrection.rgb;\n" +
+                    "    float averagePixelIntensity = uColorCorrection.a;\n" +
                     "    float lightIntensity = uLighting.w;\n" +
                     "    float materialAmbient = uMaterial.x;\n" +
                     "    float materialDiffuse = uMaterial.y;\n" +
@@ -65,9 +69,41 @@ public class ObjRenderer {
                     "    vec3 reflectedLightDirection = reflect(viewLightDirection, viewNormal);\n" +
                     "    float specularStrength = max(0.0, dot(viewFragmentDirection, reflectedLightDirection));\n" +
                     "    float specular = lightIntensity * materialSpecular * pow(specularStrength, materialSpecularPower);\n" +
+                    "    vec3 color = objectColor.rgb * (ambient + diffuse) + specular;\n" +
+                    "    color.rgb = pow(color, vec3(kGamma));\n" +
+                    "    color *= colorShift * (averagePixelIntensity / 0.5);\n" +
                     "    gl_FragColor.a = objectColor.a;\n" +
-                    "    gl_FragColor.rgb = pow(objectColor.rgb * (ambient + diffuse) + specular, vec3(kGamma));\n" +
+                    "    gl_FragColor.rgb = color;\n" +
                     "}";
+//    private final String fragmentShaderString =
+//            "precision mediump float;\n" +
+//                    "uniform sampler2D uTexture;\n" +
+//                    "uniform vec4 uLighting;\n" +   // 빛 처리
+//                    "uniform vec4 uMaterial;\n" +
+//                    "varying vec3 vPosition;\n" +
+//                    "varying vec3 vNormal;\n" +
+//                    "varying vec2 vTexCoord;\n" +
+//                    "void main() {\n" +
+//                    "    const float kGamma = 0.4545454;\n" +
+//                    "    const float kInverseGamma = 2.2;\n" +
+//                    "    vec3 viewLightDirection = uLighting.xyz;\n" +
+//                    "    float lightIntensity = uLighting.w;\n" +       // 빛처리
+//                    "    float materialAmbient = uMaterial.x;\n" +
+//                    "    float materialDiffuse = uMaterial.y;\n" +
+//                    "    float materialSpecular = uMaterial.z;\n" +
+//                    "    float materialSpecularPower = uMaterial.w;\n" +
+//                    "    vec3 viewFragmentDirection = normalize(vPosition);\n" +
+//                    "    vec3 viewNormal = normalize(vNormal);\n" +
+//                    "    vec4 objectColor = texture2D(uTexture, vec2(vTexCoord.x, 1.0 - vTexCoord.y));\n" +
+//                    "    objectColor.rgb = pow(objectColor.rgb, vec3(kInverseGamma));\n" +
+//                    "    float ambient = materialAmbient;\n" +
+//                    "    float diffuse = lightIntensity * materialDiffuse * 0.5 * (dot(viewNormal, viewLightDirection) + 1.0);\n" +
+//                    "    vec3 reflectedLightDirection = reflect(viewLightDirection, viewNormal);\n" +
+//                    "    float specularStrength = max(0.0, dot(viewFragmentDirection, reflectedLightDirection));\n" +
+//                    "    float specular = lightIntensity * materialSpecular * pow(specularStrength, materialSpecularPower);\n" +
+//                    "    gl_FragColor.a = objectColor.a;\n" +
+//                    "    gl_FragColor.rgb = pow(objectColor.rgb * (ambient + diffuse) + specular, vec3(kGamma));\n" +
+//                    "}";
 
     private Context mContext;
     private String mObjName;
@@ -87,7 +123,10 @@ public class ObjRenderer {
     private float[] mViewMatrix = new float[16];
     private float[] mProjMatrix = new float[16];
 
+    // 빛의 세기 변수
     private float mLightIntensity;
+
+    float[] mColorCorrection = new float[4];
 
     public ObjRenderer(Context context, String objName, String textureName) {
         mContext = context;
@@ -200,11 +239,17 @@ public class ObjRenderer {
         int lighting = GLES20.glGetUniformLocation(mProgram, "uLighting");
         int material = GLES20.glGetUniformLocation(mProgram, "uMaterial");
 
+        int colorCorrection = GLES20.glGetUniformLocation(mProgram, "uColorCorrection");
+
+
         float[] viewLightDirection = new float[4];
         float[] lightDirection = new float[] {0.250f, 0.866f, 0.433f, 0.0f};
         Matrix.multiplyMV(viewLightDirection, 0, mvMatrix, 0, lightDirection, 0);
         normalize(viewLightDirection);
+        // 빛의 세기를 받아 재질을 표현한다.
         GLES20.glUniform4f(lighting, viewLightDirection[0], viewLightDirection[1], viewLightDirection[2], mLightIntensity);
+
+        GLES20.glUniform4f(colorCorrection, mColorCorrection[0], mColorCorrection[1], mColorCorrection[2], mColorCorrection[3]);
 
         float ambient = 0.3f;
         float diffuse = 1.0f;
@@ -252,6 +297,7 @@ public class ObjRenderer {
         System.arraycopy(viewMatrix, 0, mViewMatrix, 0, 16);
     }
 
+    // 빛 감도를 처리하는 메서드
     public void setLightIntensity(float lightIntensity) {
         mLightIntensity = lightIntensity;
     }
@@ -261,5 +307,12 @@ public class ObjRenderer {
         v[0] /= norm;
         v[1] /= norm;
         v[2] /= norm;
+    }
+    void setColorCorrection(float[] colorCorrection){
+        mColorCorrection[0] = colorCorrection[0];
+        mColorCorrection[1] = colorCorrection[1];
+        mColorCorrection[2] = colorCorrection[2];
+        mColorCorrection[3] = colorCorrection[3];
+
     }
 }

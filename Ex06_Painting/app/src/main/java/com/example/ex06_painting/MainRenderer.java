@@ -98,6 +98,7 @@ public class MainRenderer implements GLSurfaceView.Renderer  {
         for(Line currPath : mPaths){
             if(currPath != null){
                 if(!currPath.isInited){
+                    Log.d("init", "init 안");
                     currPath.init();
                 }
                 currPath.update();
