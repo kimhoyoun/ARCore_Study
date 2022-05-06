@@ -12,7 +12,9 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.display.DisplayManager;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
@@ -161,6 +163,13 @@ public class MainActivity extends AppCompatActivity {
                         // 증강공간의 좌표에 객체가 있는지 받아온다. ex) Plane이 있는가?
                         Trackable trackable = result.getTrackable();
 
+                        // scale 조정 단, 다시 되돌릴 때는 다시 계산해야함.
+                        // => 원본을 갖고있어야하는 불편함이 생김.
+                        Matrix.scaleM(modelMatrix, 0, 0.05f, 0.05f, 0.05f);
+                        // 이동 (거리)
+
+                        // 회전 (각도)                   옵셋     각도   축
+                        Matrix.rotateM(modelMatrix, 0, 45, 0f, 0f, 1f);
                         // 좌표에 걸린 객체가 Plane 인가?
                         if(trackable instanceof Plane &&
                                 // Plane 폴리곤(면) 안에 좌표가 있는가?

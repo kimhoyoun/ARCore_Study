@@ -19,6 +19,8 @@ public class MainRenderer implements GLSurfaceView.Renderer {
     PlaneRenderer mPlane;
     Cube mCube;
     ObjRenderer mObj;
+    ObjRenderer moon;
+
 
     boolean mViewportChanged;
     int mViewportWidth, mViewportHeight;
@@ -32,7 +34,7 @@ public class MainRenderer implements GLSurfaceView.Renderer {
         mPlane = new PlaneRenderer(Color.BLUE, 0.7f);
 
         mCube = new Cube(0.3f, Color.YELLOW, 0.8f);
-        mObj = new ObjRenderer(context, "andy.obj", "andy.png");
+        mObj = new ObjRenderer(context, "earth.obj", "earth.png");
     }
 
     interface RenderCallback{

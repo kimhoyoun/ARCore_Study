@@ -6,6 +6,8 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.display.DisplayManager;
@@ -22,6 +24,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.google.ar.core.ArCoreApk;
+import com.google.ar.core.AugmentedImage;
+import com.google.ar.core.AugmentedImageDatabase;
 import com.google.ar.core.Camera;
 import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
@@ -35,6 +39,8 @@ import com.google.ar.core.Trackable;
 import com.google.ar.core.TrackingState;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
@@ -47,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     Config mConfig;
 
     boolean mUserRequestedInstall = true;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
                 float[] viewMatrix = new float[16];
                 camera.getViewMatrix(viewMatrix, 0);
 
+                // 이미지추적결과에 따른 그리기 설정
+                drawImage(frame);
+
                 mRenderer.setProjectionMatrix(projMatrix);
                 mRenderer.updateViewMatrix(viewMatrix);
 
@@ -142,7 +152,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mConfig = new Config(mSession);
+
+        mConfig.setFocusMode(Config.FocusMode.AUTO);
+        // 이미지데이터베이스 설정
+        setUpImgDB(mConfig);
+
+
         mSession.configure(mConfig);
+
         try {
             mSession.resume();
         } catch (CameraNotAvailableException e) {
@@ -150,6 +167,75 @@ public class MainActivity extends AppCompatActivity {
         }
         mSurfaceView.onResume();
         mSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+    }
+
+    // 이미지데이터베이스 설정
+    void setUpImgDB(Config config){
+        // 이미지 데이터베이스 생성
+        AugmentedImageDatabase imageDatabase = new AugmentedImageDatabase(mSession);
+
+        try {
+            // 파일스트림로드
+            InputStream is = getAssets().open("aaa.png");
+            // 파일스트림에서 Bitmap 생성
+            Bitmap bitmap = BitmapFactory.decodeStream(is);
+            // 이미지데이터베이스에 bitmap 추가
+            imageDatabase.addImage("우주",bitmap);
+
+            is.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // session config 생성한 이미지데이터베이스로 설정
+        // 이미지추적 활성화
+        config.setAugmentedImageDatabase(imageDatabase);
+
+    }
+
+    // 이미지추적결과에 따른 그리기 설정
+    void drawImage(Frame frame){
+
+        mRenderer.isImgFind = false;
+        // frame(카메라) 에서 찾은 이미지들을 Collection으로 받아온다.
+        Collection<AugmentedImage> updatedAugmentedImages =
+                frame.getUpdatedTrackables(AugmentedImage.class);
+
+        // 찾은 이미지들을 돌린다.
+        for (AugmentedImage img : updatedAugmentedImages) {
+            if (img.getTrackingState() == TrackingState.TRACKING) {
+                mRenderer.isImgFind = true;
+                Pose imgPose = img.getCenterPose();
+                Log.d("이미지 찾음", img.getIndex() +", "+img.getName());
+                float[] matrix = new float[16];
+                float[] moonMatrix = new float[16];
+                imgPose.toMatrix(matrix,0);
+
+                Matrix.scaleM(matrix, 0, 0.05f, 0.05f, 0.05f);
+
+//                System.arraycopy(moonMatrix, 0, matrix, 0, 16);
+                mRenderer.mObj.setModelMatrix(matrix);
+
+//                Matrix.translateM(moonMatrix,0, 0f, 10f, 0f);
+//
+//                mRenderer.moon.setModelMatrix(moonMatrix);
+
+                switch (img.getTrackingMethod()) {
+                    case LAST_KNOWN_POSE:
+                        // The planar target is currently being tracked based on its last
+                        // known pose.
+                        break;
+                    case FULL_TRACKING:
+                        // The planar target is being tracked using the current camera image.
+                        break;
+                    case NOT_TRACKING:
+                        // The planar target isn't been tracked.
+                        break;
+                }
+
+
+            }
+        }
     }
 
     @Override

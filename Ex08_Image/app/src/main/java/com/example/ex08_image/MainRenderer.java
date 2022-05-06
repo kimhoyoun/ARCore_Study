@@ -14,16 +14,18 @@ public class MainRenderer implements GLSurfaceView.Renderer {
 
     CameraPreView mCamera;
     ObjRenderer mObj;
+    ObjRenderer moon;
 
     boolean mViewportChanged;
     int mViewportWidth, mViewportHeight;
     RenderCallback mRenderCallback;
-
+    boolean isImgFind = false;
 
     MainRenderer(Context context, RenderCallback callback){
         mRenderCallback = callback;
         mCamera = new CameraPreView();
-        mObj = new ObjRenderer(context, "andy.obj", "andy.png");
+        mObj = new ObjRenderer(context, "earth.obj", "earth.png");
+        moon = new ObjRenderer(context, "moon.obj", "moon.png");
     }
 
     interface RenderCallback{
@@ -39,6 +41,7 @@ public class MainRenderer implements GLSurfaceView.Renderer {
 
         mCamera.init();
         mObj.init();
+        moon.init();
     }
 
     @Override
@@ -59,7 +62,10 @@ public class MainRenderer implements GLSurfaceView.Renderer {
         mCamera.draw();
 
         GLES20.glDepthMask(true);
-        mObj.draw();
+        if(isImgFind){
+            mObj.draw();
+            moon.draw();
+        }
     }
 
     void updateSession(Session session, int displayRotation){
@@ -71,10 +77,12 @@ public class MainRenderer implements GLSurfaceView.Renderer {
 
     void setProjectionMatrix(float[] matrix){
         mObj.setProjectionMatrix(matrix);
+        moon.setProjectionMatrix(matrix);
     }
 
     void updateViewMatrix(float[] matrix){
         mObj.setViewMatrix(matrix);
+        moon.setViewMatrix(matrix);
     }
 
     int getTextureId(){
