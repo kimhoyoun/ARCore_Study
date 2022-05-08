@@ -14,6 +14,7 @@ import android.hardware.display.DisplayManager;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
@@ -53,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
     Config mConfig;
 
     boolean mUserRequestedInstall = true;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,11 +176,11 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             // 파일스트림로드
-            InputStream is = getAssets().open("aaa.png");
+            InputStream is = getAssets().open("botimg.png");
             // 파일스트림에서 Bitmap 생성
             Bitmap bitmap = BitmapFactory.decodeStream(is);
             // 이미지데이터베이스에 bitmap 추가
-            imageDatabase.addImage("우주",bitmap);
+            imageDatabase.addImage("로봇",bitmap);
 
             is.close();
         } catch (IOException e) {
@@ -207,18 +207,14 @@ public class MainActivity extends AppCompatActivity {
                 mRenderer.isImgFind = true;
                 Pose imgPose = img.getCenterPose();
                 Log.d("이미지 찾음", img.getIndex() +", "+img.getName());
-                float[] matrix = new float[16];
-                float[] moonMatrix = new float[16];
-                imgPose.toMatrix(matrix,0);
+                if(!drawTag) {
+                    float[] matrix = new float[16];
+                    imgPose.toMatrix(matrix, 0);
 
-                Matrix.scaleM(matrix, 0, 0.05f, 0.05f, 0.05f);
+                    Matrix.scaleM(matrix, 0, 0.02f, 0.02f, 0.02f);
 
-//                System.arraycopy(moonMatrix, 0, matrix, 0, 16);
-                mRenderer.mObj.setModelMatrix(matrix);
-
-//                Matrix.translateM(moonMatrix,0, 0f, 10f, 0f);
-//
-//                mRenderer.moon.setModelMatrix(moonMatrix);
+                    moveObj(matrix);
+                }
 
                 switch (img.getTrackingMethod()) {
                     case LAST_KNOWN_POSE:
@@ -235,6 +231,34 @@ public class MainActivity extends AppCompatActivity {
 
 
             }
+        }
+    }
+
+    boolean stop = false;
+    boolean drawTag =false;
+
+    void moveObj(float[] matrix) {
+        if (!drawTag) {
+            float[] newMatrix = new float[16];
+            Matrix.translateM(matrix, 0, 0f, -10f, 0f);
+            new Thread() {
+                @Override
+                public void run() {
+                    int i = 0;
+                    while (!stop) {
+                        drawTag = true;
+                        mRenderer.mObj.setModelMatrix(matrix);
+                        Matrix.translateM(matrix, 0, 0f, 0.1f, 0f);
+                        SystemClock.sleep(100);
+                        i++;
+
+                        if (i > 200) {
+                            stop = true;
+                            drawTag = false;
+                        }
+                    }
+                }
+            }.start();
         }
     }
 

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 
 import com.google.ar.core.Session;
 
@@ -24,8 +25,8 @@ public class MainRenderer implements GLSurfaceView.Renderer {
     MainRenderer(Context context, RenderCallback callback){
         mRenderCallback = callback;
         mCamera = new CameraPreView();
-        mObj = new ObjRenderer(context, "earth.obj", "earth.png");
-        moon = new ObjRenderer(context, "moon.obj", "moon.png");
+        mObj = new ObjRenderer(context, "bot.obj", "bot.png");
+//        moon = new ObjRenderer(context, "moon.obj", "moon.png");
     }
 
     interface RenderCallback{
@@ -41,7 +42,7 @@ public class MainRenderer implements GLSurfaceView.Renderer {
 
         mCamera.init();
         mObj.init();
-        moon.init();
+//        moon.init();
     }
 
     @Override
@@ -63,8 +64,9 @@ public class MainRenderer implements GLSurfaceView.Renderer {
 
         GLES20.glDepthMask(true);
         if(isImgFind){
+            Log.d("그리기", "그리는중");
             mObj.draw();
-            moon.draw();
+//            moon.draw();
         }
     }
 
@@ -77,12 +79,12 @@ public class MainRenderer implements GLSurfaceView.Renderer {
 
     void setProjectionMatrix(float[] matrix){
         mObj.setProjectionMatrix(matrix);
-        moon.setProjectionMatrix(matrix);
+//        moon.setProjectionMatrix(matrix);
     }
 
     void updateViewMatrix(float[] matrix){
         mObj.setViewMatrix(matrix);
-        moon.setViewMatrix(matrix);
+//        moon.setViewMatrix(matrix);
     }
 
     int getTextureId(){
