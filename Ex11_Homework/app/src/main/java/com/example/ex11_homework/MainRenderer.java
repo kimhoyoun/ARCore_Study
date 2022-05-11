@@ -1,4 +1,4 @@
-package com.example.ex11_catch;
+package com.example.ex11_homework;
 
 import android.content.Context;
 import android.graphics.Color;
